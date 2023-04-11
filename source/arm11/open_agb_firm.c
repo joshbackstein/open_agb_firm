@@ -57,7 +57,7 @@ static OafConfig g_oafConfig =
 	64,    // backlight
 	5,     // backlightSteps
 	false, // directBoot
-	true,  // useGbaDb
+	false,  // useGbaDb
 
 	// [video]
 	2,     // scaler
