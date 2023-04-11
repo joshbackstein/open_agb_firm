@@ -49,7 +49,7 @@
                         "backlight=64\n"          \
                         "backlightSteps=5\n"      \
                         "directBoot=false\n"      \
-                        "useGbaDb=true\n\n"       \
+                        "useGbaDb=false\n\n"       \
                         "[video]\n"               \
                         "scaler=2\n"              \
                         "gbaGamma=2.2\n"          \
@@ -101,7 +101,7 @@ static OafConfig g_oafConfig =
 	64,    // backlight
 	5,     // backlightSteps
 	false, // directBoot
-	true,  // useGbaDb
+	false,  // useGbaDb
 
 	// [video]
 	2,     // scaler
