@@ -45,6 +45,7 @@
 
 #define OAF_WORK_DIR  "sdmc:/3ds/gba-net-boot/open_agb_firm"
 #define OAF_SAVE_DIR  "saves" // Relative to work dir.
+#define DEFAULT_AUTOBOOT "sdmc:/rom.gba"
 
 
 
@@ -471,6 +472,15 @@ Result oafInitAndRun(void)
 	{
 		do
 		{
+			// Create autoboot.txt for default rom if it doesn't exist
+			if((res = fsLoadPathFromFile("autoboot.txt", filePath)) == RES_FR_NO_FILE)
+			{
+				const char *const defaultAutoboot = DEFAULT_AUTOBOOT;
+				if((res = fsQuickWrite("autoboot.txt", defaultAutoboot, strlen(defaultAutoboot))) != RES_OK) break;
+			}
+			else if(res != RES_OK) break;
+			memset(filePath, 0, 512);
+
 			// Try to load the ROM path from autoboot.txt.
 			// If this file doesn't exist show the file browser.
 			res = fsLoadPathFromFile("autoboot.txt", filePath);
