@@ -46,6 +46,14 @@
 #define OAF_WORK_DIR  "sdmc:/3ds/gba-net-boot/open_agb_firm"
 #define OAF_SAVE_DIR  "saves" // Relative to work dir.
 #define DEFAULT_AUTOBOOT "sdmc:/rom.gba"
+#define DEFAULT_SAVEFILE "sdmc:/rom.sav"
+
+#define FIRM_MAX_SIZE       (0x400000 - 0x200)
+#define FIRM_OFFSET         (0x1000)
+#define MAX_ROM_SIZE        (1024*1024*32)
+#define MAGIC_STRING_OFFSET (FIRM_OFFSET + FIRM_MAX_SIZE)
+#define ROM_SIZE_OFFSET     (MAGIC_STRING_OFFSET + 4)
+#define ROM_OFFSET          (ROM_SIZE_OFFSET + 4)
 
 
 
@@ -472,6 +480,25 @@ Result oafInitAndRun(void)
 	{
 		do
 		{
+			// Check for magic string "NTBT" to see if we should load ROM from memory
+			bool loadRomFromFile = false;
+			ee_printf("Checking for magic string \"NTBT\"\n");
+			char *magic_string = (char*)FCRAM_BASE + MAGIC_STRING_OFFSET;
+			u32 romSize = *(u32*)(FCRAM_BASE + ROM_SIZE_OFFSET);
+			int diff = memcmp(magic_string, "NTBT", 4);
+			if (diff) {
+				ee_printf("No magic string, loading from file\n");
+				loadRomFromFile = true;
+			} else {
+				ee_printf("Found magic string, loading from memory\n");
+				ee_printf("ROM size: %ld\n", romSize);
+			}
+
+			// BEGIN if (loadRomFromFile)
+			// BEGIN if (loadRomFromFile)
+			// BEGIN if (loadRomFromFile)
+			if (loadRomFromFile) {
+
 			// Create autoboot.txt for default rom if it doesn't exist
 			if((res = fsLoadPathFromFile("autoboot.txt", filePath)) == RES_FR_NO_FILE)
 			{
@@ -492,15 +519,40 @@ Result oafInitAndRun(void)
 			}
 			else if(res != RES_OK) break;
 
+			} // END if (loadRomFromFile)
+			// END if (loadRomFromFile)
+			// END if (loadRomFromFile)
+			else
+			{
+				strcpy(filePath, DEFAULT_AUTOBOOT);
+			}
+
 			//make copy of rom path
 			char *const romFilePath = (char*)calloc(strlen(filePath)+1, 1);
 			if(romFilePath == NULL) { res = RES_OUT_OF_MEM; break; }
 			strcpy(romFilePath, filePath);
 
+			// BEGIN if (loadRomFromFile)
+			// BEGIN if (loadRomFromFile)
+			// BEGIN if (loadRomFromFile)
+			if (loadRomFromFile) {
+
 			// Load the ROM file.
-			u32 romSize;
+			//u32 romSize;
 			res = loadGbaRom(filePath, &romSize);
 			if(res != RES_OK) break;
+
+			} // END if (loadRomFromFile)
+			// END if (loadRomFromFile)
+			// END if (loadRomFromFile)
+			else
+			{
+				memcpy((void*)LGY_ROM_LOC, (void*)(FCRAM_BASE + ROM_OFFSET), romSize);
+				ee_printf("ROM offset: 0x%08x\n", FCRAM_BASE + ROM_OFFSET);
+				//ee_printf("ROM value: 0x%08x\n", *(u32*)(FCRAM_BASE + ROM_OFFSET));
+				ee_printf("ROM value: 0x%02x\n", *(char*)(FCRAM_BASE + ROM_OFFSET));
+				fixRomPadding(romSize);
+			}
 
 			// Load the per-game config.
 			rom2GameCfgPath(filePath);
